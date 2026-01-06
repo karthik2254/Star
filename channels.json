@@ -1,0 +1,12 @@
+[
+  {
+    "name": "Star Sports HD",
+    "url": "https://example.com/stream.mpd",
+    "hdnea": ""
+  },
+  {
+    "name": "Sports 18 HD",
+    "url": "https://example.com/stream2.mpd",
+    "hdnea": ""
+  }
+]

@@ -1,0 +1,58 @@
+name: Fetch HDNEA Token at Scheduled Times
+
+on:
+  schedule:
+    - cron: '30 23 * * *'
+    - cron: '30 2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write   # 🔥 REQUIRED
+
+jobs:
+  fetch-hdnea-token:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Fetch __hdnea__ token
+        run: |
+          response=$(curl -s https://fftv.in/jpls/cookies.json)
+          token=$(echo "$response" | jq -r '.[0].cookie' | sed 's/^__hdnea__=//')
+
+          if [ -z "$token" ] || [ "$token" = "null" ]; then
+            echo "::error ::Token fetch failed"
+            exit 1
+          fi
+
+          echo "__hdnea__=$token" > fetch.txt
+
+      - name: Update channels.json
+        run: python append_hdnea_token.py
+
+      - name: Commit & Push (SAFE)
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add fetch.txt channels.json
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+
+          git commit -m "Auto update HDNEA token"
+          git push

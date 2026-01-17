@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write   # 🔥 REQUIRED
+  contents: write
 
 jobs:
   fetch-hdnea-token:
@@ -27,9 +27,13 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Fetch __hdnea__ token
+      - name: Fetch __hdnea__ token (SECURE)
+        env:
+          COOKIE_JSON_URL: ${{ secrets.HDNEA_JSON_URL }}
         run: |
-          response=$(curl -s https://fftv.in/jpls/cookies.json)
+          echo "::add-mask::$COOKIE_JSON_URL"
+
+          response=$(curl -fsSL "$COOKIE_JSON_URL")
           token=$(echo "$response" | jq -r '.[0].cookie' | sed 's/^__hdnea__=//')
 
           if [ -z "$token" ] || [ "$token" = "null" ]; then
@@ -42,7 +46,7 @@ jobs:
       - name: Update channels.json
         run: python append_hdnea_token.py
 
-      - name: Commit & Push (SAFE)
+      - name: Commit & Push
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"

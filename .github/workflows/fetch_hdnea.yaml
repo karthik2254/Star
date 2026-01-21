@@ -2,8 +2,7 @@ name: Fetch HDNEA Token at Scheduled Times
 
 on:
   schedule:
-    - cron: '30 23 * * *'
-    - cron: '30 2 * * *'
+    - cron: '*/5 * * * *'   # ⏱️ Runs every 5 minutes
   workflow_dispatch:
 
 permissions:
